@@ -50,7 +50,11 @@ namespace DataController
                 }
             }
         }
-
+        /// <summary>
+        /// Return the value for a specified setting
+        /// </summary>
+        /// <param name="settingOption"></param>
+        /// <returns></returns>
         public string RequestSettingValue(string settingOption)
         {
             if (!SettingsOption.Contains(settingOption)) return null;
@@ -75,8 +79,13 @@ namespace DataController
         /// <returns></returns>
         public bool AddSetting(string settingOption, string value)
         {
-
-            return false;
+            if (SettingsOption.Contains(settingOption)) //Fails if setting already exists
+                return false;
+            string[] newSettings = new string[SettingsFileText.Count() + 1];
+            string toAdd = settingOption + '=' + value;
+            newSettings[newSettings.Count() - 1] = toAdd.Remove(' '); //Removes all space in sting
+            FileHandler.OverriteFile(FileName, newSettings); //Rewrite file for new updated settings
+            return true;           
         }
 
         /// <summary>
@@ -87,7 +96,20 @@ namespace DataController
         /// <returns></returns>
         public bool EditSetting(string settingOption, string newValue)
         {
-            return false;
+            if (!SettingsOption.Contains(settingOption))
+                return false;
+            List<string> newSettings = new List<string>();
+            foreach (string s in SettingsFileText)
+            {
+                string[] splitString = s.Remove(' ').Split('='); //Removes all spaces in string and split string around symbol
+                if (splitString[0] == settingOption)
+                    newSettings.Add(settingOption + '=' + newValue); //Save updated setting instead of original
+                else
+                    newSettings.Add(s);
+            }
+            FileHandler.OverriteFile(FileName, SettingsFileText); //Rewrite file for new updated settings
+            SettingsFileText = newSettings.ToArray();
+            return true;
         }
 
         /// <summary>
@@ -97,7 +119,6 @@ namespace DataController
         /// <returns></returns>
         public bool RemoveSetting(string settingOption)
         {
-            int fileLength = SettingsFileText.Count();
             if (!SettingsOption.Contains(settingOption))
                 return false;
             List<string> newSettings = new List<string>();
@@ -107,15 +128,10 @@ namespace DataController
                 if (splitString[0] != settingOption)
                     newSettings.Add(s);
             }
-            SettingsFileText = newSettings.ToArray();
             FileHandler.OverriteFile(FileName, SettingsFileText); //Rewrite file for new updated settings
-            if (fileLength > SettingsFileText.Count()) //If file has gotten smaller, delete must have been successful
-                return true;
-            else return false;
+            SettingsFileText = newSettings.ToArray();
+            return true;
         }
-
-        
-
     }
 }
 
