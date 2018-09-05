@@ -32,12 +32,13 @@ namespace DataController
 
         /// <summary>Overrite a file text with new text</summary>
         /// <param name="toWrite">New file text</param>
-        public static bool OverriteFile(string fileName, string[] toWrite, bool ifEmpty=false)
+        public static bool OverriteFile(string fileName, string[] toWrite, bool ifEmpty = false)
         {
             File_Inst loadedFile = GetLoadedFile(fileName);
             if (loadedFile == null) return false; //Ensure file exists and is loaded
 
-            if (ifEmpty) {
+            if (ifEmpty)
+            {
                 if (!loadedFile.IsEmpty()) return false; //Only overrite if file is empty
             }
 
@@ -54,9 +55,10 @@ namespace DataController
         /// <param name="fileName">Name of file loaded</param>
         /// <param name="line">Line requested</param>
         /// <returns></returns>
-        public static string ReadLine(string fileName, int line) {
+        public static string ReadLine(string fileName, int line)
+        {
             File_Inst loadedFile = GetLoadedFile(fileName);
-            if (loadedFile == null) return null ; //Ensure file exists and is loaded
+            if (loadedFile == null) return null; //Ensure file exists and is loaded
             string[] allText = ReadFromFile(loadedFile);
             return allText[line];
         }
@@ -66,12 +68,15 @@ namespace DataController
         /// <param name="fileName">Name of file loaded</param>
         /// <param name="searchTerm">Search criteria</param>
         /// <returns></returns>
-        public static string ReadLine(string fileName, string searchTerm) {
+        public static string ReadLine(string fileName, string searchTerm)
+        {
             File_Inst loadedFile = GetLoadedFile(fileName);
             if (loadedFile == null) return null; //Ensure file exists and is loaded
             string[] allText = ReadFromFile(loadedFile);
-            foreach (string s in allText) {
-                if (s.Contains(searchTerm)) {
+            foreach (string s in allText)
+            {
+                if (s.Contains(searchTerm))
+                {
                     return s;
                 }
             }
@@ -82,7 +87,8 @@ namespace DataController
         /// </summary>
         /// <param name="fileName">Name of file loaded</param>
         /// <returns></returns>
-        public static string[] ReadAll(string fileName) {
+        public static string[] ReadAll(string fileName)
+        {
             File_Inst loadedFile = GetLoadedFile(fileName);
             if (loadedFile == null) return null; //Ensure file exists and is loaded
             string[] allText = ReadFromFile(loadedFile);
@@ -183,8 +189,9 @@ namespace DataController
             try
             {
                 //Encrypt data (TODO)
-                //Attempt to write information to file
-                File.WriteAllLines(f.FullPath, contents);
+                string generatedSalt = SecurityManager.GenerateNewSALT();
+                string[] encryptedData = SecurityManager.EncryptFile(contents, fileEncryptionPass, generatedSalt)
+                File.WriteAllLines(f.FullPath, contents); //Write information to file
                 return true;
             }
             catch
@@ -198,7 +205,8 @@ namespace DataController
             try
             {
                 //Decrypt data (TODO)
-                return File.ReadAllLines(f.FullPath);
+                string[] allLines = File.ReadAllLines(f.FullPath);
+                return SecurityManager.DecryptFile(allLines, fileEncryptionPass);
             }
             catch
             {

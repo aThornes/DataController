@@ -10,6 +10,7 @@ namespace DataController
 {
     class SecurityManager
     {
+
         #region Password security
 
         #endregion
@@ -19,18 +20,37 @@ namespace DataController
         #endregion
 
         #region File security
-        public static string EncryptFile(string[] fileContents, string encryptionPassword, string salt)
+        /// <summary>
+        /// Encrypt file contents into multiple lines
+        /// </summary>
+        /// <param name="fileContents">Original file contents</param>
+        /// <param name="encryptionPassword">Encryption password</param>
+        /// <param name="salt">Cryptographically genereated salt key</param>
+        /// <returns></returns>
+        public static string[] EncryptFile(string[] fileContents, string encryptionPassword, string salt)
         {
             string fullString = "";
             foreach (string s in fileContents)
                 fullString += s + "@NL#";  //Characters denotes new line
             string toEncrypt = fullString.Substring(0, fullString.Length - 4);
 
-            return AESTwoWayEncryption.Encrypt<TripleDESCryptoServiceProvider>(toEncrypt, encryptionPassword, salt);
+            string encrpytedData = salt + "|SSPP|" + AESTwoWayEncryption.Encrypt<TripleDESCryptoServiceProvider>(toEncrypt, encryptionPassword, salt); //Salt string partion point seperates data and salt
+
+            return SplitStringEveryN(encrpytedData, 20);
         }
-        public static string[] DecryptFile(string encryptedContents, string encrpytionPassword, string salt) {
-            string decrpytedData = AESTwoWayEncryption.Decrypt<TripleDESCryptoServiceProvider>(encryptedContents, encrpytionPassword, salt);
-            string[] seperatedString = decrpytedData.Split(new string[] { "@NL#" }, StringSplitOptions.None);
+        /// <summary>
+        /// Decrypt file into original file contents
+        /// </summary>
+        /// <param name="fileContents">Original file contents</param>
+        /// <param name="encryptionPassword">Encryption password</param>
+        public static string[] DecryptFile(string[] encryptedContents, string encrpytionPassword) {
+            string encryptionString = CombineStringArray(encryptedContents);
+            string[] parts = encryptionString.Split(new string[] { "|SSPP|" }, StringSplitOptions.None); //Split encrypted data to get string and main contents
+            string salt = parts[0];
+            
+            string decrpytedData = AESTwoWayEncryption.Decrypt<TripleDESCryptoServiceProvider>(parts[1], encrpytionPassword, salt);
+
+            string[] seperatedString = decrpytedData.Split(new string[] { "@NL#" }, StringSplitOptions.None); //Split string back up into original lines
             return seperatedString;
         }
 
@@ -41,12 +61,37 @@ namespace DataController
         {
             byte[] salt = new byte[len];
             string newSalt;
-            System.Security.Cryptography.RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider();
+            RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider();
             crypto.GetBytes(salt);
             newSalt = Convert.ToBase64String(salt);
             return newSalt;
             //using (var ran = new RNGCryptoServiceProvider()) { ran.GetNonZeroBytes(salt); }
             //return Encoding.UTF8.GetString(salt); ;
+        }
+        #endregion
+
+        #region Additional functions
+        private static string[] SplitStringEveryN(string toSplit, int nCharacters)
+        {
+            int lines = (int)Math.Ceiling((double)(toSplit.Count() / nCharacters)); //Number of lines that will be returned
+            string[] toReturn = new string[lines];
+            int x = 0;
+            for (int n = 0; n < toSplit.Count(); n+=nCharacters)
+            {
+                int toAdd = nCharacters;
+                if ((n + nCharacters) > toSplit.Count())
+                    toAdd = toSplit.Count() - n;
+                toReturn[x] = toSplit.Substring(n, toAdd);
+                x++;
+            }
+            return toReturn;
+        }
+
+        private static string CombineStringArray(string[] stringArray) {
+            string combinedString = "";
+            foreach (string s in stringArray)
+                combinedString += s;
+            return combinedString;
         }
         #endregion
     }
