@@ -57,6 +57,11 @@ namespace DataController
         #endregion
 
         #region Generation functions
+        /// <summary>
+        /// Generates a cyptographically random salt key
+        /// </summary>
+        /// <param name="len"></param>
+        /// <returns></returns>
         public static string GenerateNewSALT(int len = 32)
         {
             byte[] salt = new byte[len];
