@@ -4,19 +4,82 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DataController
 {
     class SecurityManager
     {
+        private static string defaultSALT = "KqUvn9D1"; //Not at all secure, only to be used for non-search columns for non-sensitive data
 
         #region Password security
+        /// <summary>
+        /// Encrypt password
+        /// </summary>
+        /// <param name="pass">Original, unencrypted password</param>
+        /// <param name="salt">Cryptographically random salt</param>
+        /// <returns>Encrypted password string</returns>
+        public string EncryptPassword(string pass, string salt)
+        {
+            using (MD5 crypto = MD5.Create())
+            {
+                byte[] passByteArray = Encoding.ASCII.GetBytes(pass + salt);
+                byte[] hashArray = crypto.ComputeHash(passByteArray);
 
+                return Encoding.ASCII.GetString(hashArray);
+            }
+        }
+        /// <summary>
+        /// Check if password matches encrypted pass
+        /// </summary>
+        /// <param name="encryptedPassword"></param>
+        /// <param name="passToCheck"></param>
+        /// <param name="salt"></param>
+        /// <returns></returns>
+        public bool ComparePassword(string encryptedPassword, string passToCheck, string salt) {
+            string encPass = EncryptPassword(passToCheck, salt);
+            if (encryptedPassword == encPass)
+                return true;
+            return false;
+        }
         #endregion
 
-        #region General security
+        #region General security        
+        /// <summary>
+        /// Encrypt data to be put into the database (Two way encrpytion) || Not to be used for passwords
+        /// </summary>
+        /// <param name="data">Data to be encrypted</param>
+        /// <param name="encryptionPass">Encrpytion password</param>
+        /// <param name="isSearchTerm">Is this a database search term?</param>
+        /// <returns></returns>
+        public static string EncryptData(string data, string encryptionPass, bool isSearchTerm = false)
+        {
+            string salt = GenerateNewSALT(8);
+            if (isSearchTerm)
+                salt = defaultSALT;
 
+            string encryptedString = AESTwoWayEncryption.Encrypt<TripleDESCryptoServiceProvider>(data, encryptionPass, salt);
+            if (isSearchTerm) return encryptedString;
+            return salt + encryptedString;
+        }
+        /// <summary>
+        /// Decrpyt data from the database (Two way encryption)
+        /// </summary>
+        /// <param name="encrpytedData">Data to be decrypted</param>
+        /// <param name="encryptionPass">Encrpyption password</param>
+        /// <param name="isSearchTerm">Is this a database search term?</param>
+        /// <returns></returns>
+        public static string DecrpytData(string encrpytedData, string encryptionPass, bool isSearchTerm = false)
+        {
+            if (isSearchTerm)
+                return AESTwoWayEncryption.Decrypt<TripleDESCryptoServiceProvider>(encrpytedData, encryptionPass, defaultSALT);
+
+            string salt = encrpytedData.Substring(0, 8);
+            string toDecrypt = encrpytedData.Substring(8, encrpytedData.Count() - 8);
+
+            return AESTwoWayEncryption.Decrypt<TripleDESCryptoServiceProvider>(toDecrypt, encryptionPass, salt);
+        }
         #endregion
 
         #region File security
@@ -43,11 +106,12 @@ namespace DataController
         /// </summary>
         /// <param name="fileContents">Original file contents</param>
         /// <param name="encryptionPassword">Encryption password</param>
-        public static string[] DecryptFile(string[] encryptedContents, string encrpytionPassword) {
+        public static string[] DecryptFile(string[] encryptedContents, string encrpytionPassword)
+        {
             string encryptionString = CombineStringArray(encryptedContents);
             string[] parts = encryptionString.Split(new string[] { "|SSPP|" }, StringSplitOptions.None); //Split encrypted data to get string and main contents
             string salt = parts[0];
-            
+
             string decrpytedData = AESTwoWayEncryption.Decrypt<TripleDESCryptoServiceProvider>(parts[1], encrpytionPassword, salt);
 
             string[] seperatedString = decrpytedData.Split(new string[] { "@NL#" }, StringSplitOptions.None); //Split string back up into original lines
@@ -81,7 +145,7 @@ namespace DataController
             int lines = (int)Math.Ceiling((double)(toSplit.Count() / nCharacters)); //Number of lines that will be returned
             string[] toReturn = new string[lines];
             int x = 0;
-            for (int n = 0; n < toSplit.Count(); n+=nCharacters)
+            for (int n = 0; n < toSplit.Count(); n += nCharacters)
             {
                 int toAdd = nCharacters;
                 if ((n + nCharacters) > toSplit.Count())
@@ -92,13 +156,16 @@ namespace DataController
             return toReturn;
         }
 
-        private static string CombineStringArray(string[] stringArray) {
+        private static string CombineStringArray(string[] stringArray)
+        {
             string combinedString = "";
             foreach (string s in stringArray)
                 combinedString += s;
             return combinedString;
         }
         #endregion
+
+       
     }
 
     public class AESTwoWayEncryption

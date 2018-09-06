@@ -11,6 +11,7 @@ namespace DataController
     public class DataController
     {
         private static SqlConnection connection;
+        private static DatabaseInformation dbInfo;
         #region Global database commands
         /// <summary>
         /// Intialise the database controller, set priminary connection parameters
@@ -27,6 +28,7 @@ namespace DataController
                 connectionString += "Trusted_Connection=true";
 
             connection = new SqlConnection(connectionString);
+            dbInfo = new DatabaseInformation();
         }
         /// <summary>
         /// Attempt to open database connection
@@ -37,6 +39,7 @@ namespace DataController
             if (connection != null)
             {
                 connection.Open();
+                dbInfo.LoadInfo();
                 return true;
             }
             else return false;
@@ -181,11 +184,49 @@ namespace DataController
             //Execute command
             cmd.ExecuteNonQuery();
         }
+        /// <summary>
+        /// Get each table found within the database
+        /// </summary>
+        /// <returns>List of tables found</returns>
+        public static string[] GetTables()
+        {
+            string[] tables;
+
+            DataTable dataSchema = connection.GetSchema("Tables");
+            tables = new string[dataSchema.Rows.Count];
+            for (int n = 0; n < dataSchema.Rows.Count; n++)
+                tables[n] = dataSchema.Rows[n][2].ToString();
+
+            return tables;
+        }
+        /// <summary>
+        /// Get array of all column names found in a table
+        /// </summary>
+        /// <param name="tableName">Name of table in database</param>
+        /// <returns>Array of column names</returns>
+        public static string[] GetColumns(string tableName)
+        {
+            string sqlCommandString = "SELECT * FROM Northwind.INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'@table';";
+            SqlCommand cmd = new SqlCommand(sqlCommandString, connection);
+            cmd.Parameters.Add(GenParameter("table", tableName));
+            string[] columns;
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                int count = reader.FieldCount;
+                columns = new string[count];
+                int x = 0;
+                while (x < count)
+                {
+                    columns[x] = reader[x].ToString();
+                    x++;
+                }
+                return columns;
+            }
+        }
         #endregion
 
         #region Communication commands
-
-
+        
         #endregion
 
         #region Supporting functions
@@ -336,6 +377,74 @@ namespace DataController
 
     class DatabaseInformation
     {
+        List<DatabaseTable> tables;
         //Store information about database, tables, columns etc.
+        public void LoadInfo()
+        {
+            tables = new List<DatabaseTable>();
+
+            string[] dataTables = DataController.GetTables(); //Get names of all tables in database
+
+
+            foreach (string table in dataTables) //Get names of all columns for each table
+                tables.Add(new DatabaseTable(table, DataController.GetColumns(table)));
+        }
+
+        public bool DoesTableExist(string tableName) {
+            foreach (DatabaseTable table in tables) {
+                if (table.Name == tableName)
+                    return true;
+            }
+            return false;
+        }
+
+        public bool DoesColumnExist(string tableName, string column)
+        {
+            foreach (string col in GetTable(tableName).Columns)
+                if (col == column) return true;
+            return false;
+        }
+
+        public string[] GetColumns(string tableName)
+        {
+            return GetTable(tableName).Columns;
+        }
+
+        private DatabaseTable GetTable(string tableName) {
+            foreach (DatabaseTable table in tables)
+            {
+                if (table.Name == tableName)
+                    return table;
+            }
+            return null;
+        }
+
+    }
+
+    class DatabaseTable
+    {
+        private string Table;
+        private string[] ColumnList;
+
+        public DatabaseTable(string table, string[] columns) {
+            Table = table;
+            ColumnList = columns;
+        }
+
+        /// <summary>
+        /// Get the name of the table
+        /// </summary>
+        public string Name { get => Table; }
+
+        /// <summary>
+        /// Get columns found within the table
+        /// </summary>
+        public string[] Columns { get => ColumnList; }
+
+        /// <summary>
+        /// Get the primary key of the table
+        /// </summary>
+        public string PrimaryKey { get => ColumnList[0]; }
+        
     }
 }

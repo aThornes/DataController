@@ -48,6 +48,7 @@ namespace DataController
                 return true;
             else return false;
         }
+
         #region Read File
         /// <summary>
         /// Returns a single line from a file
@@ -190,7 +191,7 @@ namespace DataController
             {
                 //Encrypt data (TODO)
                 string generatedSalt = SecurityManager.GenerateNewSALT();
-                string[] encryptedData = SecurityManager.EncryptFile(contents, fileEncryptionPass, generatedSalt)
+                string[] encryptedData = SecurityManager.EncryptFile(contents, fileEncryptionPass, generatedSalt);
                 File.WriteAllLines(f.FullPath, contents); //Write information to file
                 return true;
             }
