@@ -390,6 +390,11 @@ namespace DataController
                 tables.Add(new DatabaseTable(table, DataController.GetColumns(table)));
         }
 
+        /// <summary>
+        /// Check if table exists in database
+        /// </summary>
+        /// <param name="tableName">Table name</param>
+        /// <returns>True if table is found</returns>
         public bool DoesTableExist(string tableName) {
             foreach (DatabaseTable table in tables) {
                 if (table.Name == tableName)
@@ -397,14 +402,37 @@ namespace DataController
             }
             return false;
         }
-
+        /// <summary>
+        /// Change the type the given table (if it exists)
+        /// </summary>
+        /// <param name="tableName">Table name</param>
+        public void SetTableType(string tableName, string newType) {
+            GetTable(tableName).Type = newType;
+        }
+        /// <summary>
+        /// Get the type of table (if it exists)
+        /// </summary>
+        /// <param name="tableName">Table name</param>
+        /// <returns>Table type</returns>
+        public string GetTableType(string tableName) {
+            return GetTable(tableName).Type;
+        }
+        /// <summary>
+        /// Check if a column exists in the given table
+        /// </summary>
+        /// <param name="tableName">Table name</param>
+        /// <returns>True if column is found</returns>
         public bool DoesColumnExist(string tableName, string column)
         {
             foreach (string col in GetTable(tableName).Columns)
                 if (col == column) return true;
             return false;
         }
-
+        /// <summary>
+        /// Return all column names in a table
+        /// </summary>
+        /// <param name="tableName">Table name</param>
+        /// <returns>array of all columns</returns>
         public string[] GetColumns(string tableName)
         {
             return GetTable(tableName).Columns;
@@ -425,8 +453,9 @@ namespace DataController
     {
         private string Table;
         private string[] ColumnList;
+        private string type;
 
-        public DatabaseTable(string table, string[] columns) {
+        public DatabaseTable(string table, string[] columns, string type = "general") {
             Table = table;
             ColumnList = columns;
         }
@@ -445,6 +474,11 @@ namespace DataController
         /// Get the primary key of the table
         /// </summary>
         public string PrimaryKey { get => ColumnList[0]; }
+
+        /// <summary>
+        /// Get or set the type of table, i.e. 'user'
+        /// </summary>
+        public string Type { get => type; set => type = value; }
         
     }
 }
