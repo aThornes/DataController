@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataCommand.cs" />
     <Compile Include="DataController.cs" />
     <Compile Include="FileHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

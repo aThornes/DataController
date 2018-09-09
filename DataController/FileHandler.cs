@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace DataController
 {
+    /// <summary>
+    /// File handler class, 
+    /// </summary>
     class FileHandler
     {
         private static List<File_Inst> OnHandFiles;
@@ -189,7 +192,7 @@ namespace DataController
         {
             try
             {
-                //Encrypt data (TODO)
+                //Encrypt data and write file
                 string generatedSalt = SecurityManager.GenerateNewSALT();
                 string[] encryptedData = SecurityManager.EncryptFile(contents, fileEncryptionPass, generatedSalt);
                 File.WriteAllLines(f.FullPath, contents); //Write information to file
@@ -204,8 +207,8 @@ namespace DataController
         private static string[] ReadFromFile(File_Inst f)
         {
             try
-            {
-                //Decrypt data (TODO)
+            {          
+                //Return decrypted data
                 string[] allLines = File.ReadAllLines(f.FullPath);
                 return SecurityManager.DecryptFile(allLines, fileEncryptionPass);
             }

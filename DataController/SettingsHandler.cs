@@ -11,7 +11,7 @@ namespace DataController
     /// </summary>
     class SettingsHandler
     {
-        private static string FileName;
+        private static string Setting_fileName;
         private static List<string> SettingsOption;
         private static string[] SettingsFileText;
 
@@ -27,11 +27,11 @@ namespace DataController
         /// <param name="defaultSettingsOptions">Input custom settings options, leave null for default</param>
         public SettingsHandler(string[] defaultSettingsOptions, string settingFilename = "Settings.info")
         {
-            settingFilename = FileName;
+            Setting_fileName = settingFilename;
 
             if (defaultSettingsOptions != null) DefaultSettingsOptions = defaultSettingsOptions;
-            FileHandler.LoadFile(new File_Inst(FileHandler.DefaultPath, settingFilename));
-            FileHandler.OverriteFile(settingFilename, DefaultSettingsOptions, true); //Add default settings if file is already empty
+            FileHandler.LoadFile(new File_Inst(FileHandler.DefaultPath, Setting_fileName));
+            FileHandler.OverriteFile(Setting_fileName, DefaultSettingsOptions, true); //Add default settings if file is already empty
 
             Load();
         }
@@ -39,7 +39,7 @@ namespace DataController
         private void Load()
         {
             SettingsOption = new List<string>();
-            string[] fileText = FileHandler.ReadAll(FileName);
+            string[] fileText = FileHandler.ReadAll(Setting_fileName);
             SettingsFileText = fileText;
             foreach (string s in fileText)
             {
@@ -84,7 +84,7 @@ namespace DataController
             string[] newSettings = new string[SettingsFileText.Count() + 1];
             string toAdd = settingOption + '=' + value;
             newSettings[newSettings.Count() - 1] = toAdd.Remove(' '); //Removes all space in sting
-            FileHandler.OverriteFile(FileName, newSettings); //Rewrite file for new updated settings
+            FileHandler.OverriteFile(Setting_fileName, newSettings); //Rewrite file for new updated settings
             return true;           
         }
 
@@ -107,7 +107,7 @@ namespace DataController
                 else
                     newSettings.Add(s);
             }
-            FileHandler.OverriteFile(FileName, SettingsFileText); //Rewrite file for new updated settings
+            FileHandler.OverriteFile(Setting_fileName, SettingsFileText); //Rewrite file for new updated settings
             SettingsFileText = newSettings.ToArray();
             return true;
         }
@@ -128,10 +128,15 @@ namespace DataController
                 if (splitString[0] != settingOption)
                     newSettings.Add(s);
             }
-            FileHandler.OverriteFile(FileName, SettingsFileText); //Rewrite file for new updated settings
+            FileHandler.OverriteFile(Setting_fileName, SettingsFileText); //Rewrite file for new updated settings
             SettingsFileText = newSettings.ToArray();
             return true;
         }
+
+        /// <summary>
+        /// Returns the name of the settings file
+        /// </summary>
+        public string Filname { get => Setting_fileName; }
     }
 }
 

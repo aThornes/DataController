@@ -8,10 +8,14 @@ using System.Threading.Tasks;
 
 namespace DataController
 {
+    /// <summary>
+    /// Primary connection between application and database, for custom commands, extend DataCommand.cs
+    /// </summary>
     public class DataController
     {
         private static SqlConnection connection;
         private static DatabaseInformation dbInfo;
+
         #region Global database commands
         /// <summary>
         /// Intialise the database controller, set priminary connection parameters
@@ -40,6 +44,7 @@ namespace DataController
             {
                 connection.Open();
                 dbInfo.LoadInfo();
+                InputValidation.SetInformationClass = dbInfo; //Passes database information to validation class
                 return true;
             }
             else return false;
@@ -69,6 +74,10 @@ namespace DataController
         /// <param name="insertColumn">Columns to be added to (null for all columns)</param>
         private static void GeneralInsertNonQuery(string tableName, string[] newData, string[] insertColumn = null)
         {
+            //Validate data entry
+            InputValidation.ValidateNewEntry(tableName, newData.Count());
+            InputValidation.ValidateColumns(tableName, newData);
+            
             bool specifiedColumns = false;
             if (insertColumn != null)
                 specifiedColumns = true;
@@ -102,6 +111,7 @@ namespace DataController
         /// <returns>Database response</returns>
         private static List<string[]> GeneralFetchQuery(string tableName, string[] requestedColumns, string queryColumn, string dataQuery)
         {
+            InputValidation.ValidateColumns(tableName, requestedColumns, true);
             bool allColumns = false;
             if (requestedColumns == null) //If no columns are specified then query will return all columns
                 allColumns = true;
@@ -145,6 +155,9 @@ namespace DataController
         /// <param name="columnData">New data to replace existing</param>
         private static void GeneralUpdateNonQuery(string tableName, string queryColumn, string dataQuery, string[] updateColumns, string[] columnData)
         {
+            InputValidation.ValidateColumns(tableName, updateColumns);
+            if (updateColumns.Count() != columnData.Count())
+                throw new ConstraintException("Columns do not match data"); //Ensure array lengths match
             //Construct command string
             string commandString = SQLUpdateQueryBuilder(updateColumns.Count());
             SqlCommand cmd = new SqlCommand(commandString, connection);

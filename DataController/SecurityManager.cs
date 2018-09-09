@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace DataController
 {
+    /// <summary>
+    /// Security manager, handles encryption/decrpytion and relevant additional functions
+    /// </summary>
     class SecurityManager
     {
         private static string defaultSALT = "KqUvn9D1"; //Not at all secure, only to be used for non-search columns for non-sensitive data
@@ -164,8 +167,7 @@ namespace DataController
             return combinedString;
         }
         #endregion
-
-       
+               
     }
 
     public class AESTwoWayEncryption
