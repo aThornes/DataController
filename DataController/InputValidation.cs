@@ -96,45 +96,162 @@ namespace DataController
         {
             return null;
         }
+
         public static string ValidatePassword(string toValidate, int minLength = 8, int maxLength = 32)
         {
             return null;
         }
+
         public static string ValidateEmail(string toValidate, int minLength = 5, int maxLength = 32)
         {
             return null;
         }
+
         public static string ValidatePhone(string toValidate, int minLength = 8, int maxLength = 32)
         {
             return null;
         }
+
         public static string ValidateAddress(string toValidate, int minLength = 8, int maxLength = 32)
         {
             return null;
         }
+
         public static string ValidatePostCode(string toValidate, int minLength = 8, int maxLength = 32)
         {
             return null;
         }
 
-        private static bool RegexCheck(string l, string regExpression)
+        #endregion
+    }
+
+    public static class ValidationExtensionMethods
+    {
+        #region Useful checks
+        /// <summary>
+        /// Check if string is null or is empty ("")
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool IsNullOrEmpty(this string value)
         {
-            Regex regex = new Regex(regExpression);
-            if (regex.IsMatch(l))
+            if (value == null || value == "")
                 return true;
-            else
-                return false;
+            return false;
         }
 
-        private static bool CheckLength(string l, int minLength, int maxLength)
+        /// <summary>
+        /// Check if value length is between given minimum and maximum
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="minLength"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
+        public static bool HasLengthBetween(this string value, int minLength, int maxLength)
         {
-            int length = l.Count();
+            if (value.IsNullOrEmpty()) return false;
+            int length = value.Count();
             if (length >= minLength && length <= maxLength)
                 return true;
             else
                 return false;
         }
-        #endregion
-    }
 
+        /// <summary>
+        /// Check if string matches the given regex expression
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="regexExpression"></param>
+        /// <returns></returns>
+        public static bool DoesMatchRegex(this string value, string regexExpression)
+        {
+            Regex regex = new Regex(regexExpression);
+            if (regex.IsMatch(value))
+                return true;
+            else
+                return false;
+        }
+        #endregion
+
+        #region String validation methods
+        /// <summary>
+        /// Checks if string is a valid email address
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool IsEmail(this string value)
+        {
+            if (value.IsNullOrEmpty()) return false;
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(value); //This will fail if value is not a valid email
+                return true;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Check if string is a valid postcode (note: only checks format, not if postcode exists)
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool IsPostcode(this string value)
+        {
+            //TODO (possible) check if postcode actually exists
+            if (value.IsNullOrEmpty()) return false;
+
+            string regExpression = @"^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|
+                                    (([A-Za-z][0-9][A-Za-z])|
+                                    ([A-Za-z][A-Ha-hJ-Yj-y][0-9][A-Za-z]?))))\s?[0-9][A-Za-z]{2})?$";
+            if (value.DoesMatchRegex(regExpression))
+                return true;
+            else
+                return false;
+
+        }
+
+        /// <summary>
+        /// Checks if string is a valid UK phone
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool IsPhone(this string value)
+        {
+            if (value.IsNullOrEmpty()) return false;
+
+            string toCheck  = value;
+            if (value[0] == '0' && value.Length == 11)
+                toCheck = value.Substring(1, value.Length - 1); //Remove first 0 if user wrote full phone (i.e. 07878112912 -> +447878112912)
+            toCheck = "+44" + toCheck;
+            string regExpression =
+                @"^(((\+44\s?\d{4}|\(?0\d{4}\)?)\s?\d{3}\s?\d{3})|((\+44\s?\d{3}|\(?0\d{3}\)?)\s?\d{3}\s?\d{4})|((\+44\s?\d{2}|\(?0\d{2}\)?)\s?\d{4}\s?\d{4}))(\s?\#(\d{4}|\d{3}))?$";
+
+            if (toCheck.DoesMatchRegex(regExpression))            
+                return true;            
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Checks if string is a valid password
+        /// </summary>
+        /// <param name="value"></param>
+        /// <
+        /// <returns></returns>
+        public static bool IsValidPassword(this string value, string expression = null)
+        {
+            if (value.IsNullOrEmpty()) return false;
+            string regExpression = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)$";
+            if (!expression.IsNullOrEmpty()) regExpression = @expression;
+
+            if (value.HasLengthBetween(8, 32) && value.DoesMatchRegex(regExpression))
+            {
+                return true;
+            }
+            return false;
+        }
+        #endregion
+
+
+    }
 }
