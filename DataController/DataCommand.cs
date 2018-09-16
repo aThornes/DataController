@@ -63,6 +63,31 @@ namespace DataController
         {
             return DataController.FetchDataRow(tableName, queryTerm, queryItem, requestedColumns);
         }
+
+        /// <summary>
+        /// Edit multiple columns for a row in the provided table
+        /// </summary>
+        /// <param name="tableName">Name of table</param>
+        /// <param name="queryTerm">Search query column</param>
+        /// <param name="queryItem">Column query item</param>
+        /// <param name="columnsToUpdate">Columns to update</param>
+        /// <param name="newColumnData">New column data</param>
+        /// <returns></returns>
+        public static string UpdateRowData(string tableName, string queryTerm, string queryItem, string[] columnsToUpdate, string[] newColumnData) {
+            return DataController.EditDataRow(tableName, queryTerm, queryItem, columnsToUpdate, newColumnData);
+        }
+
+        /// <summary>
+        /// Delete the row data for given criteria
+        /// </summary>
+        /// <param name="tableName">Name of table</param>
+        /// <param name="queryTerm">Search query column</param>
+        /// <param name="queryItem">Column query item</param>
+        /// <returns></returns>
+        public static string DeleteRowData(string tableName, string queryTerm, string queryItem)
+        {
+            return DataController.DeleteDataRow(tableName, queryTerm, queryItem);
+        }
         #endregion
         #region Private base commands
 

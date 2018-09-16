@@ -126,7 +126,7 @@ namespace DataController
     }
 
     public static class ValidationExtensionMethods
-    {
+    {    
         #region Useful checks
         /// <summary>
         /// Check if string is null or is empty ("")

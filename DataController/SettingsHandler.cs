@@ -17,10 +17,11 @@ namespace DataController
 
         private static string[] DefaultSettingsOptions = new string[5] {
             "#DatabaseCommunicator default settings file",
-            "DatabaseServer=127.0.0.1",
+            "DatabaseServer=127.0.0.1,14333",
             "DatabaseName=Database1",
             "DatabaseUser=SA",
             "DatabasePassword=Password"};
+
         /// <summary>
         /// Initialise Settings Handler
         /// </summary>
@@ -136,7 +137,7 @@ namespace DataController
         /// <summary>
         /// Returns the name of the settings file
         /// </summary>
-        public string Filname { get => Setting_fileName; }
+        public string Filename { get => Setting_fileName; }
     }
 }
 

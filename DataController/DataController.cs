@@ -34,6 +34,7 @@ namespace DataController
             connection = new SqlConnection(connectionString);
             dbInfo = new DatabaseInformation();
         }
+
         /// <summary>
         /// Attempt to open database connection
         /// </summary>
@@ -77,7 +78,7 @@ namespace DataController
             //Validate data entry
             InputValidation.ValidateNewEntry(tableName, newData.Count());
             InputValidation.ValidateColumns(tableName, newData);
-            
+
             bool specifiedColumns = false;
             if (insertColumn != null)
                 specifiedColumns = true;
@@ -101,6 +102,7 @@ namespace DataController
             //Execute command
             cmd.ExecuteNonQuery();
         }
+
         /// <summary>
         /// Complete a fetch request for the specified columns via a search term
         /// </summary>
@@ -145,6 +147,7 @@ namespace DataController
             }
             return databaseResponse;
         }
+
         /// <summary>
         /// Complete an update request, edit existing database data
         /// </summary>
@@ -177,6 +180,7 @@ namespace DataController
             //Execute command
             cmd.ExecuteNonQuery();
         }
+
         /// <summary>
         /// Execute a delete command
         ///</summary>
@@ -197,6 +201,7 @@ namespace DataController
             //Execute command
             cmd.ExecuteNonQuery();
         }
+
         /// <summary>
         /// Get each table found within the database
         /// </summary>
@@ -212,6 +217,7 @@ namespace DataController
 
             return tables;
         }
+
         /// <summary>
         /// Get array of all column names found in a table
         /// </summary>
@@ -239,6 +245,13 @@ namespace DataController
         #endregion
 
         #region Communication commands
+        /// <summary>
+        /// Create a new row in thegiven table
+        /// </summary>
+        /// <param name="tableName">Name of table</param>
+        /// <param name="newData">New data to add</param>
+        /// <param name="columnsTargetted">Columns targetted (Null for all columns)</param>
+        /// <returns></returns>
         public static string CreateRowEntry(string tableName, string[] newData, string[] columnsTargetted = null)
         {
             try
@@ -246,11 +259,11 @@ namespace DataController
                 GeneralInsertNonQuery(tableName, newData, columnsTargetted);
                 return "Created new row in " + tableName;
             }
-            catch {
+            catch
+            {
                 return "Failed to create row in " + tableName;
             }
         }
-
 
         ///<summary>Fetch database data for a single row</summary>
         /// <param name="tableName">Name of table</param>
@@ -262,6 +275,7 @@ namespace DataController
         {
             return FetchDataRows(tableName, queryTerm, queryItem, requestedColumns)[0];
         }
+
         /// <summary>
         /// Fetch database data for one or more rows
         /// </summary>
@@ -275,6 +289,60 @@ namespace DataController
             if (dbInfo.DoesColumnExist(tableName, queryTerm))
                 return GeneralFetchQuery(tableName, requestedColumns, queryTerm, queryItem);
             return null;
+        }
+
+        /// <summary>
+        /// Edit multiple columns for a row in the provided table
+        /// </summary>
+        /// <param name="tableName">Name of table</param>
+        /// <param name="queryTerm">Search query column</param>
+        /// <param name="queryItem">Column query item</param>
+        /// <param name="updateColumns">Columns to update</param>
+        /// <param name="newColumnData">New column data</param>
+        /// <returns></returns>
+        public static string EditDataRow(string tableName, string queryColumn, string queryTerm, string[] updateColumns, string[] newColumnData)
+        {
+            if (!dbInfo.DoesColumnExist(tableName, queryColumn))
+                return "Failed, query column " + queryColumn + " does not exist";
+            try
+            {
+                GeneralUpdateNonQuery(tableName, queryColumn, queryTerm, updateColumns, newColumnData);
+                return "Successfully edited row in " + tableName;
+            }
+            catch { return "Failed to edit data"; }            
+        }
+
+        /// <summary>
+        /// Edit a column for a row in the provided table
+        /// </summary>
+        /// <param name="tableName">Name of table</param>
+        /// <param name="queryTerm">Search query column</param>
+        /// <param name="queryItem">Column query item</param>
+        /// <param name="updateColumns">Column to update</param>
+        /// <param name="newColumnData">New column data</param>
+        public static string EditDataRowItem(string tableName, string queryColumn, string queryTerm, string updateColumn, string newColumnData)
+        {
+            return EditDataRow(tableName, queryColumn, queryTerm, new string[] { updateColumn }, new string[] { newColumnData });
+        }
+
+        /// <summary>
+        /// Delete the row data for given criteria
+        /// </summary>
+        /// <param name="tableName">Name of table</param>
+        /// <param name="queryColumn">Column to query</param>
+        /// <param name="queryTerm">Query item to search</param>
+        /// <returns></returns>
+        public static string DeleteDataRow(string tableName, string queryColumn, string queryTerm) {
+            if (!dbInfo.DoesColumnExist(tableName, queryColumn))
+                return "Failed, query column " + queryColumn + " does not exist";
+            try
+            {
+                GeneralDeleteNonQuery(tableName, queryColumn, queryTerm);
+                return "Successfully deleted data matching " + queryColumn + " = " + queryTerm;
+            }
+            catch {
+                return "Failed to delete data";
+            }
         }
         #endregion
 
@@ -381,6 +449,7 @@ namespace DataController
             };
             return param;
         }
+
         /// <summary>
         /// Genereate an array of sql parameters
         /// </summary>
@@ -403,6 +472,7 @@ namespace DataController
             }
             return parameters;
         }
+
         /// <summary>
         /// Generate a new sql parameter foreach column requested
         /// </summary>
@@ -444,28 +514,35 @@ namespace DataController
         /// </summary>
         /// <param name="tableName">Table name</param>
         /// <returns>True if table is found</returns>
-        public bool DoesTableExist(string tableName) {
-            foreach (DatabaseTable table in tables) {
+        public bool DoesTableExist(string tableName)
+        {
+            foreach (DatabaseTable table in tables)
+            {
                 if (table.Name == tableName)
                     return true;
             }
             return false;
         }
+
         /// <summary>
         /// Change the type the given table (if it exists)
         /// </summary>
         /// <param name="tableName">Table name</param>
-        public void SetTableType(string tableName, string newType) {
+        public void SetTableType(string tableName, string newType)
+        {
             GetTable(tableName).Type = newType;
         }
+
         /// <summary>
         /// Get the type of table (if it exists)
         /// </summary>
         /// <param name="tableName">Table name</param>
         /// <returns>Table type</returns>
-        public string GetTableType(string tableName) {
+        public string GetTableType(string tableName)
+        {
             return GetTable(tableName).Type;
         }
+
         /// <summary>
         /// Check if a column exists in the given table
         /// </summary>
@@ -477,6 +554,7 @@ namespace DataController
                 if (col == column) return true;
             return false;
         }
+
         /// <summary>
         /// Check if all columns exists in the given table
         /// </summary>
@@ -484,13 +562,15 @@ namespace DataController
         /// <returns>True if all columns are found</returns>
         public bool DoColumnsExist(string tableName, string[] columns)
         {
-            foreach(string checkCol in columns){
+            foreach (string checkCol in columns)
+            {
                 foreach (string col in GetTable(tableName).Columns)
                     if (col == checkCol) return true;
                 return false;
             }
             return false;
         }
+
         /// <summary>
         /// Return all column names in a table
         /// </summary>
@@ -501,7 +581,8 @@ namespace DataController
             return GetTable(tableName).Columns;
         }
 
-        private DatabaseTable GetTable(string tableName) {
+        private DatabaseTable GetTable(string tableName)
+        {
             foreach (DatabaseTable table in tables)
             {
                 if (table.Name == tableName)
@@ -518,7 +599,8 @@ namespace DataController
         private string[] ColumnList;
         private string type;
 
-        public DatabaseTable(string table, string[] columns, string type = "general") {
+        public DatabaseTable(string table, string[] columns, string type = "general")
+        {
             Table = table;
             ColumnList = columns;
         }
@@ -542,6 +624,6 @@ namespace DataController
         /// Get or set the type of table, i.e. 'user'
         /// </summary>
         public string Type { get => type; set => type = value; }
-        
+
     }
 }
