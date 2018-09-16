@@ -10,6 +10,6 @@ to use, simply call the SecurityManager routines to do so.
 
 Validation methods are also present allowing for simple checks such if string is Email, Postcode, Phone, ValidPassword or other RegEx and length checks.
 
-To use this library please download the .dll file and add as a reference in your project. (\DataController\bin\Debug\DataController.dll)
+To use this library please download the .dll file and add as a reference in your project. (DataController.dll)
 
 Please note that testing is still in progress for this library and some aspects may not work at this time, it is advised that you wait before attempting to use this library however feel free to test it yourself.
