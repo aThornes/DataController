@@ -81,7 +81,8 @@ namespace DataController
         /// <returns></returns>
         public static string ValidateName(string toValidate, int minLength = 4, int maxLength = 20)
         {
-            return null;
+            if (toValidate.HasLengthBetween(minLength, maxLength)) return null;
+            return "Invalid name length";
         }
 
         /// <summary>
@@ -99,27 +100,32 @@ namespace DataController
 
         public static string ValidatePassword(string toValidate, int minLength = 8, int maxLength = 32)
         {
-            return null;
+            if (toValidate.IsValidPassword()) return null;
+            return "Invalid password";
         }
 
         public static string ValidateEmail(string toValidate, int minLength = 5, int maxLength = 32)
         {
-            return null;
+            if (toValidate.IsEmail()) return null; 
+            return "Invalid email";
         }
 
         public static string ValidatePhone(string toValidate, int minLength = 8, int maxLength = 32)
         {
-            return null;
+            if (toValidate.IsPhone()) return null;
+            return "Invalid phone number";
         }
 
         public static string ValidateAddress(string toValidate, int minLength = 8, int maxLength = 32)
         {
-            return null;
+            if (toValidate.IsAddress()) return null;
+            return "Invalid address";
         }
 
         public static string ValidatePostCode(string toValidate, int minLength = 8, int maxLength = 32)
         {
-            return null;
+            if (toValidate.IsPostcode()) return null;
+            return "Invalid postcode";
         }
 
         #endregion
@@ -188,6 +194,19 @@ namespace DataController
                 return true;
             }
             catch { return false; }
+        }
+
+        /// <summary>
+        /// Checks if string is valid for an address line
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool IsAddress(this string value)
+        {
+            if (value.IsNullOrEmpty()) return false;
+            if (value.HasLengthBetween(4, 32) && value.DoesMatchRegex(@"^[a-zA-Z0-9_.-]*$"))
+                return true;
+            return false;
         }
 
         /// <summary>
