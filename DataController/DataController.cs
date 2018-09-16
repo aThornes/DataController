@@ -65,7 +65,7 @@ namespace DataController
         }
         #endregion
 
-        #region Data communciation
+        #region General Commands
         /// <summary>
         /// Execute insert request, add data to the specified table
         /// </summary>
@@ -239,7 +239,43 @@ namespace DataController
         #endregion
 
         #region Communication commands
-        
+        public static string CreateRowEntry(string tableName, string[] newData, string[] columnsTargetted = null)
+        {
+            try
+            {
+                GeneralInsertNonQuery(tableName, newData, columnsTargetted);
+                return "Created new row in " + tableName;
+            }
+            catch {
+                return "Failed to create row in " + tableName;
+            }
+        }
+
+
+        ///<summary>Fetch database data for a single row</summary>
+        /// <param name="tableName">Name of table</param>
+        /// <param name="queryTerm">Search query column</param>
+        /// <param name="queryItem">Column query item</param>
+        /// <param name="requestedColumns">Columns to fetch</param>
+        /// <returns>Data row if found</returns>
+        public static string[] FetchDataRow(string tableName, string queryTerm, string queryItem, string[] requestedColumns)
+        {
+            return FetchDataRows(tableName, queryTerm, queryItem, requestedColumns)[0];
+        }
+        /// <summary>
+        /// Fetch database data for one or more rows
+        /// </summary>
+        /// <param name="tableName">Name of table</param>
+        /// <param name="queryTerm">Search query column</param>
+        /// <param name="queryItem">Column query item</param>
+        /// <param name="requestedColumns">Columns to fetch</param>
+        /// <returns></returns>
+        public static List<string[]> FetchDataRows(string tableName, string queryTerm, string queryItem, string[] requestedColumns)
+        {
+            if (dbInfo.DoesColumnExist(tableName, queryTerm))
+                return GeneralFetchQuery(tableName, requestedColumns, queryTerm, queryItem);
+            return null;
+        }
         #endregion
 
         #region Supporting functions
@@ -439,6 +475,20 @@ namespace DataController
         {
             foreach (string col in GetTable(tableName).Columns)
                 if (col == column) return true;
+            return false;
+        }
+        /// <summary>
+        /// Check if all columns exists in the given table
+        /// </summary>
+        /// <param name="tableName">Table name</param>
+        /// <returns>True if all columns are found</returns>
+        public bool DoColumnsExist(string tableName, string[] columns)
+        {
+            foreach(string checkCol in columns){
+                foreach (string col in GetTable(tableName).Columns)
+                    if (col == checkCol) return true;
+                return false;
+            }
             return false;
         }
         /// <summary>

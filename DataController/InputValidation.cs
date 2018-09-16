@@ -34,7 +34,7 @@ namespace DataController
             foreach (string col in columns)
             {
                 if (!dbInfo.DoesColumnExist(tableName, col))
-                    throw new ArgumentNullException("Provided column " + col + " does not exist in the database");
+                    throw new ArgumentNullException("Provided column ," + col + ", does not exist in the database");
             }
         }
         /// <summary>

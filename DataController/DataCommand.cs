@@ -38,6 +38,36 @@ namespace DataController
             }
             catch { return false; }
         }
+        #region Primary Commands
+        /// <summary>
+        /// Generate a new row in the database
+        /// </summary>
+        /// <param name="tableName">Name of table</param>
+        /// <param name="newData">Data to be added</param>
+        /// <param name="columnsTargetted">Columns to add data (null for all columns)</param>
+        /// <returns>If successful</returns>
+        public static string GenerateNewRow(string tableName, string[] newData, string[] columnsTargetted = null)
+        {
+            return DataController.CreateRowEntry(tableName, newData, columnsTargetted);
+        }
+
+        /// <summary>
+        /// Fetch data from the database for the given parameters
+        /// </summary>
+        /// <param name="tableName">Name of table</param>
+        /// <param name="queryTerm">Search query column</param>
+        /// <param name="queryItem">Column query item</param>
+        /// <param name="requestedColumns">Columns to fetch</param>
+        /// <returns>string array of all column data found</returns>
+        public static string[] FetchDatabaseData(string tableName,  string queryTerm, string queryItem, string[] requestedColumns = null)
+        {
+            return DataController.FetchDataRow(tableName, queryTerm, queryItem, requestedColumns);
+        }
+        #endregion
+        #region Private base commands
+
+
+        #endregion
 
 
     }
